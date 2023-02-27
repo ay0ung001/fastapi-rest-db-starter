@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   // Define the 'request' function to handle interactions with the server
-  function server_request(url, data={}, verb, callback) {
+  async function server_request(url, data, verb, callback) {
     return fetch(url, {
       credentials: 'same-origin',
       method: verb,
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   // Handle POST Requests
-  add_form.addEventListener('submit', (event) => {
+  add_form.addEventListener('submit', async (event) => {
     // Stop the default form behavior
     event.preventDefault();
 
@@ -41,7 +41,33 @@ document.addEventListener("DOMContentLoaded", () => {
       6. Remove the alert below this comment block
     */
 
-    alert('Feature is incomplete!');
+    let first_name = add_form.querySelector('input[name=first_name').value;
+    let last_name = add_form.querySelector('input[name=last_name').value; 
+    let action = add_form.getAttribute("action"); 
+    let method = add_form.getAttribute("method");
+
+    // console.log(typeof first_name); 
+    // console.log(typeof last_name); 
+
+    const data = { "first_name": first_name, "last_name": last_name }
+
+    // console.log(typeof data); 
+    console.log(data);
+
+    console.log(action); 
+    console.log(method); 
+
+    let response = await server_request(`http://localhost:6543${action}`, data, method);
+    
+    let row = template.Content.cloneNode(true);
+
+    row.querySelector('.row').setAttribute('data-id', response.user_id);
+    row.querySelector('.row span:nth-of-type(1)').textContent = response.first_name;
+    row.querySelector('.row span:nth-of-type(2)').textContent = response.last_name;
+
+    table.appendChild(row); 
+    
+    // alert('Feature is incomplete!');
 
   });
 
