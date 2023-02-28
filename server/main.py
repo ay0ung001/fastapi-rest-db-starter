@@ -184,8 +184,14 @@ async def post_user(request:Request) -> dict:
 
   if user_id != None: 
     user_data = db_select_users(user_id)
-    print(user_data)
-    return user_data
+    user_dict = {
+      'user_id' : user_data[0], 
+      'first_name' : user_data[1], 
+      'last_name' : user_data[2]
+    }
+    # print(user_dict)
+    # print(type(user_dict))
+    return user_dict
 
   return {}
 
@@ -198,7 +204,8 @@ async def put_user(user_id:int, request:Request) -> dict:
   3. Return the update status under the 'success' key
   '''
   response = db_update_user(user_id,request)
-  return {response: False}
+  
+  return {"response": response}
 
 # DELETE /users/{user_id}
 @app.delete('/users/{user_id}')

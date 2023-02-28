@@ -7,14 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
       credentials: 'same-origin',
       method: verb,
       body: JSON.stringify(data),
-      headers: {'Content-Type': 'application/json'}
+      headers: { 'Content-Type': 'application/json' }
     })
-    .then(response => response.json())
-    .then(response => {
-      if(callback)
-        callback(response);
-    })
-    .catch(error => console.error('Error:', error));
+      .then(response => response.json())
+      .then(response => {
+        if (callback)
+          callback(response);
+      })
+      .catch(error => console.error('Error:', error));
   }
 
   //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let template = document.querySelector('#new_row');
   let add_form = document.querySelector('form[name=add_user]');
   let edit_form = document.querySelector('form[name=edit_user]');
+  let delete_button = document.querySelector('delete_button');
+  let save_button = document.querySelector('save_button');
 
   //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   // Handle POST Requests
@@ -42,8 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
     */
 
     let first_name = add_form.querySelector('input[name=first_name').value;
-    let last_name = add_form.querySelector('input[name=last_name').value; 
-    let action = add_form.getAttribute("action"); 
+    let last_name = add_form.querySelector('input[name=last_name').value;
+    let action = add_form.getAttribute("action");
     let method = add_form.getAttribute("method");
 
     // console.log(typeof first_name); 
@@ -52,21 +54,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = { "first_name": first_name, "last_name": last_name }
 
     // console.log(typeof data); 
-    console.log(data);
+    // console.log(data);
 
-    console.log(action); 
-    console.log(method); 
+    // console.log(action); 
+    // console.log(method); 
 
     let response = await server_request(`http://localhost:6543${action}`, data, method);
-    
-    let row = template.Content.cloneNode(true);
+
+    console.log(response);
+
+    let row = document.createElement("span");
+    // row.innerHTML = resp
 
     row.querySelector('.row').setAttribute('data-id', response.user_id);
     row.querySelector('.row span:nth-of-type(1)').textContent = response.first_name;
     row.querySelector('.row span:nth-of-type(2)').textContent = response.last_name;
 
-    table.appendChild(row); 
-    
+    table.appendChild(row);
+
     // alert('Feature is incomplete!');
 
   });
@@ -76,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   main.addEventListener('click', (event) => {
 
     // Open edit form
-    if(event.target.classList.contains('edit_button')) {
+    if (event.target.classList.contains('edit_button')) {
       main.dataset.mode = 'editing';
 
       let row = event.target.closest('.row');
@@ -86,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Close edit form
-    if(event.target.classList.contains('cancel_button')) {
+    if (event.target.classList.contains('cancel_button')) {
       main.dataset.mode = 'viewing';
     }
 
@@ -98,6 +103,23 @@ document.addEventListener("DOMContentLoaded", () => {
         4. Update the row corresponding to this user with the new data if successful
         5. Switch back the main container's mode to 'viewing'
     */
+    save_button.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      let row = event.target.closest('.row');
+      let user_id = row.dataset.id;
+
+      let first_name =  row.children[1].innerText.trim();
+      let last_name = row.children[2].innerText.trim();
+
+      const data = { "user_id": user_id, "first_name": first_name, "last_name": last_name}
+
+      await function_request(`http://localhost:6543/users/${user_id}`,data,"PUT");
+      main.dataset.mode = 'viewing';
+      location.reload(); 
+
+
+    })
 
     // Submit DELETE request and delete the row if successful
     /*
@@ -106,6 +128,19 @@ document.addEventListener("DOMContentLoaded", () => {
       3. Submit a server DELETE request and when the server responds...
         4. Remove the row if successful
     */
+    delete_button.addEventListener('submit', async (event) => {
+    // Stop the default form behavior
+    event.preventDefault();
+
+    let row = event.target.closest('.row');
+    deleted_id = row.dataset.id;
+    const data = { "user_id": deleted_id }
+
+    await function_request(`http://localhost:6543/users/${deleted_id}`,data,"DELETE");
+    location.reload();
+
+    });
+    
   });
 
 });
